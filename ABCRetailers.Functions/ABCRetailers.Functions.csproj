@@ -23,8 +23,6 @@
 
   <ItemGroup>
     <Folder Include="Functions\" />
-    <Folder Include="Helpers\" />
-    <Folder Include="Models\" />
   </ItemGroup>
 
 </Project>
