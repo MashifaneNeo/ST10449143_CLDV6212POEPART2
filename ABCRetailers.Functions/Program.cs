@@ -1,14 +1,43 @@
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Azure.Data.Tables;
+using Azure.Storage.Blobs;
+using Azure.Storage.Queues;
+using Azure.Storage.Files.Shares;
 
-var builder = FunctionsApplication.CreateBuilder(args);
+var host = new HostBuilder()
+    .ConfigureFunctionsWebApplication()  
+    .ConfigureServices(services =>
+    {
+        services.AddApplicationInsightsTelemetryWorkerService();
+        services.ConfigureFunctionsApplicationInsights();
 
-builder.ConfigureFunctionsWebApplication();
+        // Add Azure Storage clients
+        services.AddSingleton(provider =>
+        {
+            var connectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
+            return new TableServiceClient(connectionString);
+        });
 
-builder.Services
-    .AddApplicationInsightsTelemetryWorkerService()
-    .ConfigureFunctionsApplicationInsights();
+        services.AddSingleton(provider =>
+        {
+            var connectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
+            return new BlobServiceClient(connectionString);
+        });
 
-builder.Build().Run();
+        services.AddSingleton(provider =>
+        {
+            var connectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
+            return new QueueServiceClient(connectionString);
+        });
+
+        services.AddSingleton(provider =>
+        {
+            var connectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
+            return new ShareServiceClient(connectionString);
+        });
+    })
+    .Build();
+
+host.Run();

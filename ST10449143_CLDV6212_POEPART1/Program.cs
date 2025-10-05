@@ -32,6 +32,11 @@ namespace ST10449143_CLDV6212_POEPART1
                 app.UseHsts();
             }
 
+            builder.Services.AddHttpClient<IFunctionsApi, FunctionsApiClient>(client =>
+            {
+                client.BaseAddress = new Uri(builder.Configuration["Functions:BaseUrl"] ?? "http://localhost:7071");
+            });
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
