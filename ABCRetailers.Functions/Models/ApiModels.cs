@@ -14,7 +14,7 @@ public class CreateProductRequest
 {
     public string productName { get; set; } = string.Empty;
     public string description { get; set; } = string.Empty;
-    public decimal price { get; set; }
+    public double price { get; set; }
     public int stockAvailable { get; set; }
 }
 
@@ -41,7 +41,7 @@ public class ProductDto
     public string id { get; set; } = string.Empty;
     public string productName { get; set; } = string.Empty;
     public string description { get; set; } = string.Empty;
-    public decimal price { get; set; }
+    public double price { get; set; }
     public int stockAvailable { get; set; }
     public string imageUrl { get; set; } = string.Empty;
 }
@@ -54,8 +54,8 @@ public class OrderDto
     public string productId { get; set; } = string.Empty;
     public string productName { get; set; } = string.Empty;
     public int quantity { get; set; }
-    public decimal unitPrice { get; set; }
-    public decimal totalPrice { get; set; }
+    public double unitPrice { get; set; }
+    public double totalPrice { get; set; }
     public string status { get; set; } = "Submitted";
     public DateTime orderDate { get; set; }
 }

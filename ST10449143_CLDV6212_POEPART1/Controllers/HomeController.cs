@@ -9,33 +9,44 @@ namespace ST10449143_CLDV6212_POEPART1.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly IAzureStorageService _storageService;
+        private readonly IFunctionsApi _functionsApi;
+        private readonly ILogger<HomeController> _logger;
 
-        public HomeController(IAzureStorageService storageService)
+        public HomeController(IFunctionsApi functionsApi, ILogger<HomeController> logger)
         {
-            _storageService = storageService;
+            _functionsApi = functionsApi;
+            _logger = logger;
         }
+
         public async Task<IActionResult> Index()
         {
-            var products = await _storageService.GetAllEntitiesAsync<Product>();
-            var customers = await _storageService.GetAllEntitiesAsync<Customer>();
-            var orders = await _storageService.GetAllEntitiesAsync<Order>();
-
-            var viewModel = new HomeViewModel
+            try
             {
-                FeaturedProducts = products.Take(5).ToList(),
-                ProductCount = products.Count,
-                CustomerCount = customers.Count,
-                OrderCount = orders.Count
-            };
-            return View(viewModel);
-        }
-        public IActionResult Privacy()
-        {
-            return View();
+                var products = await _functionsApi.GetProductsAsync();
+                var customers = await _functionsApi.GetCustomersAsync();
+                var orders = await _functionsApi.GetOrdersAsync();
+
+                var viewModel = new HomeViewModel
+                {
+                    FeaturedProducts = products.Take(5).ToList(),
+                    ProductCount = products.Count,
+                    CustomerCount = customers.Count,
+                    OrderCount = orders.Count,
+                    PendingOrdersCount = orders.Count(o => o.Status == "Submitted" || o.Status == "Processing"),
+                    TotalRevenue = orders.Where(o => o.Status == "Completed").Sum(o => o.TotalPrice)
+                };
+
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading dashboard data");
+                TempData["Error"] = "Unable to load dashboard data. Please try again.";
+                return View(new HomeViewModel());
+            }
         }
 
-        public IActionResult Contact()
+        public IActionResult Privacy()
         {
             return View();
         }
@@ -45,13 +56,14 @@ namespace ST10449143_CLDV6212_POEPART1.Controllers
         {
             try
             {
-                // Force re-initialization of the storage service
-                await _storageService.GetAllEntitiesAsync<Customer>(); // This will trigger the creation of the container if it doesn't exist
-                TempData["Success"] = "Azure Storage initialized successfully!.";
+                // Test connectivity by making a simple API call
+                await _functionsApi.GetCustomersAsync();
+                TempData["Success"] = "System initialized successfully!";
             }
             catch (Exception ex)
             {
-                TempData["Error"] = $"Failed to initializing Storage: {ex.Message}";
+                _logger.LogError(ex, "Failed to initialize system");
+                TempData["Error"] = $"Failed to initialize system: {ex.Message}";
             }
             return RedirectToAction(nameof(Index));
         }
@@ -65,6 +77,5 @@ namespace ST10449143_CLDV6212_POEPART1.Controllers
 }
 
 
-       
 
-        
+

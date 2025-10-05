@@ -91,7 +91,7 @@ public class CreateProductRequest
     [Required(ErrorMessage = "Price is required")]
     [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
     [Display(Name = "Price")]
-    public decimal Price { get; set; }
+    public double Price { get; set; }
 
     [Required(ErrorMessage = "Stock quantity is required")]
     [Range(0, int.MaxValue, ErrorMessage = "Stock cannot be negative")]
@@ -116,7 +116,7 @@ public class UpdateProductRequest
     [Required(ErrorMessage = "Price is required")]
     [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
     [Display(Name = "Price")]
-    public decimal Price { get; set; }
+    public double Price { get; set; }
 
     [Required(ErrorMessage = "Stock quantity is required")]
     [Range(0, int.MaxValue, ErrorMessage = "Stock cannot be negative")]
@@ -140,7 +140,7 @@ public class ProductDto
 
     [Display(Name = "Price")]
     [DataType(DataType.Currency)]
-    public decimal Price { get; set; }
+    public double Price { get; set; }
 
     [Display(Name = "Stock Available")]
     public int StockAvailable { get; set; }
@@ -198,11 +198,11 @@ public class OrderDto
 
     [Display(Name = "Unit Price")]
     [DataType(DataType.Currency)]
-    public decimal UnitPrice { get; set; }
+    public double UnitPrice { get; set; }
 
     [Display(Name = "Total Price")]
     [DataType(DataType.Currency)]
-    public decimal TotalPrice { get; set; }
+    public double TotalPrice { get; set; }
 
     [Display(Name = "Status")]
     public string Status { get; set; } = "Submitted";
@@ -299,7 +299,7 @@ public class HomeViewModel
     public int ProductCount { get; set; }
     public int OrderCount { get; set; }
     public int PendingOrdersCount { get; set; }
-    public decimal TotalRevenue { get; set; }
+    public double TotalRevenue { get; set; }
 }
 
 // ========== STATUS DTOs ==========

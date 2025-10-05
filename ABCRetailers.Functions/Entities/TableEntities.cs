@@ -26,7 +26,7 @@ public class ProductEntity : ITableEntity
 
     public string ProductName { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public decimal Price { get; set; }
+    public double Price { get; set; }
     public int StockAvailable { get; set; }
     public string ImageUrl { get; set; } = string.Empty;
 }
@@ -43,8 +43,8 @@ public class OrderEntity : ITableEntity
     public string ProductId { get; set; } = string.Empty;
     public string ProductName { get; set; } = string.Empty;
     public int Quantity { get; set; }
-    public decimal UnitPrice { get; set; }
-    public decimal TotalPrice { get; set; }
+    public double UnitPrice { get; set; }
+    public double TotalPrice { get; set; }
     public string Status { get; set; } = "Submitted";
     public DateTime OrderDate { get; set; } = DateTime.UtcNow;
 }

@@ -14,6 +14,7 @@ namespace ST10449143_CLDV6212_POEPART1.Services
             _logger = logger;
         }
 
+        // Customer operations
         public async Task<List<CustomerDto>> GetCustomersAsync()
         {
             try
@@ -25,7 +26,7 @@ namespace ST10449143_CLDV6212_POEPART1.Services
                 return JsonSerializer.Deserialize<List<CustomerDto>>(content, new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });
+                }) ?? new List<CustomerDto>();
             }
             catch (Exception ex)
             {
@@ -74,7 +75,7 @@ namespace ST10449143_CLDV6212_POEPART1.Services
             }
         }
 
-        public async Task<CustomerDto> UpdateCustomerAsync(string id, CreateCustomerRequest request)
+        public async Task<CustomerDto> UpdateCustomerAsync(string id, UpdateCustomerRequest request)
         {
             try
             {
@@ -108,6 +109,7 @@ namespace ST10449143_CLDV6212_POEPART1.Services
             }
         }
 
+        // Product operations
         public async Task<List<ProductDto>> GetProductsAsync()
         {
             try
@@ -119,7 +121,7 @@ namespace ST10449143_CLDV6212_POEPART1.Services
                 return JsonSerializer.Deserialize<List<ProductDto>>(content, new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });
+                }) ?? new List<ProductDto>();
             }
             catch (Exception ex)
             {
@@ -168,7 +170,7 @@ namespace ST10449143_CLDV6212_POEPART1.Services
             }
         }
 
-        public async Task<ProductDto> UpdateProductAsync(string id, CreateProductRequest request)
+        public async Task<ProductDto> UpdateProductAsync(string id, UpdateProductRequest request)
         {
             try
             {
@@ -202,6 +204,7 @@ namespace ST10449143_CLDV6212_POEPART1.Services
             }
         }
 
+        // Order operations
         public async Task<List<OrderDto>> GetOrdersAsync()
         {
             try
@@ -213,7 +216,7 @@ namespace ST10449143_CLDV6212_POEPART1.Services
                 return JsonSerializer.Deserialize<List<OrderDto>>(content, new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });
+                }) ?? new List<OrderDto>();
             }
             catch (Exception ex)
             {
@@ -266,8 +269,8 @@ namespace ST10449143_CLDV6212_POEPART1.Services
         {
             try
             {
-                var request = new { status };
-                var response = await _httpClient.PatchAsJsonAsync($"api/orders/{id}/status", request);
+                var updateRequest = new { status };
+                var response = await _httpClient.PatchAsJsonAsync($"api/orders/{id}/status", updateRequest);
                 response.EnsureSuccessStatusCode();
 
                 var content = await response.Content.ReadAsStringAsync();
@@ -278,7 +281,7 @@ namespace ST10449143_CLDV6212_POEPART1.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error updating order status for {Id}", id);
+                _logger.LogError(ex, "Error updating order status {Id}", id);
                 throw;
             }
         }
@@ -295,6 +298,20 @@ namespace ST10449143_CLDV6212_POEPART1.Services
                 _logger.LogError(ex, "Error deleting order {Id}", id);
                 throw;
             }
+        }
+
+        // File operations (placeholder implementation)
+        public async Task<FileUploadResult> UploadFileAsync(FileUploadRequest request)
+        {
+            // TODO: Implement file upload functionality
+            await Task.Delay(100); // Simulate API call
+            return new FileUploadResult
+            {
+                Success = true,
+                FileName = "placeholder.jpg",
+                FileUrl = "/images/placeholder.jpg",
+                Message = "File upload functionality to be implemented"
+            };
         }
     }
 }

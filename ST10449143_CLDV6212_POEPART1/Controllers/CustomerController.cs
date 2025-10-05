@@ -7,16 +7,42 @@ namespace ST10449143_CLDV6212_POEPART1.Controllers
 {
     public class CustomerController : Controller
     {
-        private readonly IAzureStorageService _storageService;
-        public CustomerController(IAzureStorageService storageService)
+        private readonly IFunctionsApi _functionsApi;
+        private readonly ILogger<CustomerController> _logger;
+
+        public CustomerController(IFunctionsApi functionsApi, ILogger<CustomerController> logger)
         {
-            _storageService = storageService;
+            _functionsApi = functionsApi;
+            _logger = logger;
         }
-        public async Task<IActionResult> Index()
+
+        public async Task<IActionResult> Index(string searchString)
         {
-            var customers = await _storageService.GetAllEntitiesAsync<Customer>();
-            return View(customers);
+            try
+            {
+                var customers = await _functionsApi.GetCustomersAsync();
+
+                if (!string.IsNullOrEmpty(searchString))
+                {
+                    customers = customers.Where(c =>
+                        c.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+                        c.Surname.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+                        c.Email.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+                        c.Username.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+
+                ViewBag.SearchString = searchString;
+                return View(customers);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading customers");
+                TempData["Error"] = "Unable to load customers. Please try again.";
+                return View(new List<CustomerDto>());
+            }
         }
+
         public IActionResult Create()
         {
             return View();
@@ -24,82 +50,95 @@ namespace ST10449143_CLDV6212_POEPART1.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Customer customer)
+        public async Task<IActionResult> Create(CreateCustomerRequest request)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    await _storageService.AddEntityAsync(customer);
+                    await _functionsApi.CreateCustomerAsync(request);
                     TempData["Success"] = "Customer created successfully!";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
                 {
+                    _logger.LogError(ex, "Error creating customer");
                     ModelState.AddModelError("", $"Error creating customer: {ex.Message}");
                 }
-
             }
-            return View(customer);
+            return View(request);
         }
+
         public async Task<IActionResult> Edit(string id)
         {
             if (string.IsNullOrEmpty(id))
             {
                 return NotFound();
             }
-            var customer = await _storageService.GetEntityAsync<Customer>("Customer", id);
-            if (customer == null)
+
+            try
             {
-                return NotFound();
+                var customer = await _functionsApi.GetCustomerAsync(id);
+                if (customer == null)
+                {
+                    return NotFound();
+                }
+
+                var request = new UpdateCustomerRequest
+                {
+                    Name = customer.Name,
+                    Surname = customer.Surname,
+                    Username = customer.Username,
+                    Email = customer.Email,
+                    ShippingAddress = customer.ShippingAddress
+                };
+
+                ViewBag.CustomerId = customer.Id;
+                return View(request);
             }
-            return View(customer);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading customer for edit");
+                TempData["Error"] = "Unable to load customer. Please try again.";
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Customer customer)
+        public async Task<IActionResult> Edit(string id, UpdateCustomerRequest request)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    await _storageService.UpdateEntityAsync(customer);
+                    await _functionsApi.UpdateCustomerAsync(id, request);
                     TempData["Success"] = "Customer updated successfully!";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
                 {
+                    _logger.LogError(ex, "Error updating customer");
                     ModelState.AddModelError("", $"Error updating customer: {ex.Message}");
                 }
             }
-            return View(customer);
+
+            ViewBag.CustomerId = id;
+            return View(request);
         }
-
-        // GET: Customer/Details
-        public async Task<IActionResult> Detail(string id)
-        {
-            if (string.IsNullOrEmpty(id))
-                return NotFound();
-
-            var customer = await _storageService.GetEntityAsync<Customer>("Customer", id);
-            if (customer == null)
-                return NotFound();
-
-            return View(customer);
-        }
-
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(string id)
-        {            
+        {
             try
             {
-                await _storageService.DeleteEntityAsync<Customer>("Customer", id);
+                await _functionsApi.DeleteCustomerAsync(id);
                 TempData["Success"] = "Customer deleted successfully!";
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error deleting customer");
                 TempData["Error"] = $"Error deleting customer: {ex.Message}";
             }
             return RedirectToAction(nameof(Index));
