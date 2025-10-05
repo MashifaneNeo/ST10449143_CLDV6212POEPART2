@@ -25,7 +25,6 @@
     <Folder Include="Functions\" />
     <Folder Include="Helpers\" />
     <Folder Include="Models\" />
-    <Folder Include="Entities\" />
   </ItemGroup>
 
 </Project>
